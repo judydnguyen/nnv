@@ -2,13 +2,53 @@
 
 t = tic; % track total time for training
 
-%% Load Data
+%% Load and Clean Data
+df = readtable('fdia_data/data1.csv');
 
+% Change column "marker" to numerical value
+df.marker = categorical(df.marker);
+df.marker = double(df.marker);
 
+% Data cleaning
+nanRows = any(ismissing(df), 2);
+infRows = any(isinf(table2array(df)), 2);
+badRows = nanRows | infRows;
+df = df(~badRows, :);
+
+% Display first few rows of cleaned data
+% head(df)
+
+%% Split Data
+% Separate features and target
+X = df(:, df.Properties.VariableNames ~= "marker");
+Y = df.marker;
+
+% Get the total number of observations
+numObservations = size(df, 1);
+
+% Calculate the number of observations for training (80% for training)
+numTrain = floor(0.8 * numObservations);
+
+% Generate a random permutation of indices of observations
+randIndices = randperm(numObservations);
+
+% Select indices for training and testing
+trainIndices = randIndices(1:numTrain);
+testIndices = randIndices(numTrain+1:end);
+
+% Split the data into training and testing sets
+XTrain = X(trainIndices, :);
+YTrain = Y(trainIndices, :);
+XTest = X(testIndices, :);
+YTest = Y(testIndices, :);
 
 %% Training CNN
+
+N = 128; % Number of features after preprocessing
+numClasses = 2; % For binary classification
+
 layers = [ 
-    imageInputLayer([28 28 1])
+    featureInputLayer(N)
     convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
     reluLayer
@@ -42,22 +82,23 @@ options = trainingOptions('sgdm', ...
     'InitialLearnRate',0.01, ...
     'MaxEpochs',4, ...
     'Shuffle','every-epoch', ...
-    'ValidationData',imdsValidation, ...
+    'ValidationData',{XTest,YTest}, ...
     'ValidationFrequency',30, ...
     'Verbose',false, ...
     'Plots','training-progress');
 
-net = trainNetwork(imdsTrain,layers,options);
+% TODO - fix error that trainNetwork has too many input arguments. 
+net = trainNetwork(XTrain,YTrain,layers,options);
 
-% % Get Accuracy 
-% YPred = predict(net, XTest);
-% YPred = round(YPred);
-% 
-% % Convert YPred to categorical for comparison
-% YPredCategorical = categorical(YPred);
-% 
-% accuracy = sum(YPredCategorical == YTest) / numel(YTest);
-% disp ("Validation accuracy = "+string(accuracy));
+% Get Accuracy 
+YPred = predict(net, XTest);
+YPred = round(YPred);
+
+% Convert YPred to categorical for comparison
+YPredCategorical = categorical(YPred);
+
+accuracy = sum(YPredCategorical == YTest) / numel(YTest);
+disp ("Validation accuracy = "+string(accuracy));
 
 % Save model
 disp("Saving model...");
