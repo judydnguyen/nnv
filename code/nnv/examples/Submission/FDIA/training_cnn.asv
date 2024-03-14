@@ -49,18 +49,18 @@ options = trainingOptions('sgdm', ...
 
 net = trainNetwork(imdsTrain,layers,options);
 
-% % Get Accuracy 
-% YPred = predict(net, XTest);
-% YPred = round(YPred);
-% 
-% % Convert YPred to categorical for comparison
-% YPredCategorical = categorical(YPred);
-% 
-% accuracy = sum(YPredCategorical == YTest) / numel(YTest);
-% disp ("Validation accuracy = "+string(accuracy));
+% Get Accuracy 
+YPred = predict(net, XTest);
+YPred = round(YPred);
+
+% Convert YPred to categorical for comparison
+YPredCategorical = categorical(YPred);
+
+accuracy = sum(YPredCategorical == YTest) / numel(YTest);
+disp ("Validation accuracy = "+string(accuracy));
 
 % Save model
 disp("Saving model...");
-save('fdia_model_cnn.mat', 'net', 'accuracy');
+save('_model.mat', 'net', 'accuracy');
 
 toc(t);
