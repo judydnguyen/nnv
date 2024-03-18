@@ -1,4 +1,4 @@
-%% Training of CNN for FDIA Classification
+%% Training of FFNN for FDIA Classification
 
 t = tic; % track total time for training
 
@@ -48,49 +48,32 @@ YTest = categorical(YTest);
 XTrain = table2array(XTrain);
 XTest = table2array(XTest);
 
-%% Training CNN
+%% Training FFNN
 
 inputSize = size(XTrain, 2);
 numClasses = numel(categories(YTrain)); 
 
 layers = [ 
-    featureInputLayer(inputSize)
-    convolution2dLayer(3,8,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
+    featureInputLayer(inputSize, 'Normalization', 'none', 'Name', 'input')
+
+    fullyConnectedLayer(100, 'Name', 'fc1') 
+    reluLayer('Name', 'relu1')
     
-    maxPooling2dLayer(2,'Stride',2)
+    fullyConnectedLayer(50, 'Name', 'fc2') 
+    reluLayer('Name', 'relu2')
     
-    convolution2dLayer(3,16,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    maxPooling2dLayer(2,'Stride',2)
-    
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    convolution2dLayer(3,64,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    fullyConnectedLayer(100)
-    batchNormalizationLayer
-    reluLayer
-    
-    fullyConnectedLayer(numClasses)
-    softmaxLayer
-    classificationLayer];
+    fullyConnectedLayer(numClasses, 'Name', 'fc3')
+    softmaxLayer('Name', 'softmax')
+    classificationLayer('Name', 'output')];
 
 
-options = trainingOptions('sgdm', ...
-    'InitialLearnRate',0.01, ...
-    'MaxEpochs',4, ...
+options = trainingOptions('adam', ...
+    'MaxEpochs',100, ...
+    'MiniBatchSize', 128, ...
     'Shuffle','every-epoch', ...
     'ValidationData',{XTest,YTest}, ...
     'ValidationFrequency',30, ...
-    'Verbose',false, ...
+    'Verbose',true, ...
     'Plots','training-progress');
  
 net = trainNetwork(XTrain,YTrain,layers,options);
@@ -107,6 +90,6 @@ disp ("Validation accuracy = "+string(accuracy));
 
 % Save model
 disp("Saving model...");
-save('fdia_model_cnn.mat', 'net', 'accuracy');
+save('fdia_model_ffnn.mat', 'net', 'accuracy');
 
 toc(t);

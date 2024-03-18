@@ -53,45 +53,18 @@ XTest = table2array(XTest);
 inputSize = size(XTrain, 2);
 numClasses = numel(categories(YTrain)); 
 
-layers = [
-    featureInputLayer(inputSize)
-    fullyConnectedLayer(100) 
-    reluLayer 
-
-    fullyConnectedLayer(numClasses) 
-    softmaxLayer 
-    classificationLayer 
-];
-
 layers = [ 
-    featureInputLayer(inputSize)
-    convolution2dLayer(3,8,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
+    featureInputLayer(inputSize, 'Normalization', 'none', 'Name', 'input')
+
+    fullyConnectedLayer(100, 'Name', 'fc1') % Example: 100 neurons
+    reluLayer('Name', 'relu1')
     
-    maxPooling2dLayer(2,'Stride',2)
+    fullyConnectedLayer(50, 'Name', 'fc2') % Example: 50 neurons
+    reluLayer('Name', 'relu2')
     
-    convolution2dLayer(3,16,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    maxPooling2dLayer(2,'Stride',2)
-    
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    convolution2dLayer(3,64,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    
-    fullyConnectedLayer(100)
-    batchNormalizationLayer
-    reluLayer
-    
-    fullyConnectedLayer()
-    softmaxLayer
-    classificationLayer];
+    fullyConnectedLayer(numClasses, 'Name', 'fc3') % Match number of classes
+    softmaxLayer('Name', 'softmax')
+    classificationLayer('Name', 'output')];
 
 
 options = trainingOptions('sgdm', ...
@@ -102,9 +75,7 @@ options = trainingOptions('sgdm', ...
     'ValidationFrequency',30, ...
     'Verbose',false, ...
     'Plots','training-progress');
-
-
-% TODO - fix error that trainNetwork has too many input arguments. 
+ 
 net = trainNetwork(XTrain,YTrain,layers,options);
 
 % Get Accuracy 
