@@ -42,13 +42,19 @@ YTrain = Y(trainIndices, :);
 XTest = X(testIndices, :);
 YTest = Y(testIndices, :);
 
+% Edit input types to feed into CNN else input argument errors
+YTrain = categorical(YTrain);
+YTest = categorical(YTest);
+XTrain = table2array(XTrain);
+XTest = table2array(XTest);
+
 %% Training CNN
 
-N = 128; % Number of features after preprocessing
-numClasses = 2; % For binary classification
+inputSize = size(XTrain, 2);
+numClasses = numel(categories(YTrain)); 
 
 layers = [ 
-    featureInputLayer(N)
+    featureInputLayer(inputSize)
     convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
     reluLayer
@@ -73,7 +79,7 @@ layers = [
     batchNormalizationLayer
     reluLayer
     
-    fullyConnectedLayer(10)
+    fullyConnectedLayer(numClasses)
     softmaxLayer
     classificationLayer];
 
@@ -86,8 +92,7 @@ options = trainingOptions('sgdm', ...
     'ValidationFrequency',30, ...
     'Verbose',false, ...
     'Plots','training-progress');
-
-% TODO - fix error that trainNetwork has too many input arguments. 
+ 
 net = trainNetwork(XTrain,YTrain,layers,options);
 
 % Get Accuracy 
