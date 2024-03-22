@@ -18,6 +18,23 @@ df = df(~badRows, :);
 % Display first few rows of cleaned data
 % head(df)
 
+%% Data Normalization
+features = df(:, df.Properties.VariableNames ~= "marker");
+
+% Calculate mean and standard deviation for each feature
+meanValues = mean(table2array(features), 1);
+stdValues = std(table2array(features), 0, 1);
+
+% Normalize features to have mean 0 and standard deviation 1
+zNormalizedFeatures = (table2array(features) - meanValues) ./ stdValues;
+
+% Handle constant columns to avoid NaN values (standard deviation = 0)
+constantColumns = stdValues == 0;
+zNormalizedFeatures(:, constantColumns) = 0; % Or another suitable value
+
+% Replace original features with z-normalized features in df
+df(:, df.Properties.VariableNames ~= "marker") = array2table(zNormalizedFeatures);
+
 %% Split Data
 % Separate features and target
 X = df(:, df.Properties.VariableNames ~= "marker");
@@ -72,7 +89,7 @@ layers = [
 
 
 options = trainingOptions('adam', ...
-    'InitialLearnRate', 0.001, ...
+    'InitialLearnRate', 0.01, ...
     'MaxEpochs', 100, ...
     'LearnRateSchedule', 'piecewise', ...
     'LearnRateDropFactor', 0.2, ...
@@ -86,16 +103,6 @@ options = trainingOptions('adam', ...
 
  
 net = trainNetwork(XTrain,YTrain,layers,options);
-
-% Get Accuracy 
-YPred = predict(net, XTest);
-YPred = round(YPred);
-
-% Convert YPred to categorical for comparison
-YPredCategorical = categorical(YPred);
-
-accuracy = sum(YPredCategorical == YTest) / numel(YTest);
-disp ("Validation accuracy = "+string(accuracy));
 
 % Save model
 disp("Saving model...");

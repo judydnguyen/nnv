@@ -121,6 +121,7 @@ unk = sum(results(:,1) == 2);
 totalTime = sum(results(:,2));
 avgTime = totalTime/N;
 
+
 % Print results to screen
 disp("======= ROBUSTNESS RESULTS ==========")
 disp(" ");
