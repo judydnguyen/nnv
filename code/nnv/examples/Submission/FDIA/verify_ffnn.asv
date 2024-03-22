@@ -99,17 +99,9 @@ for i=1:total_obs
     % For the purpose of this tutorial, we are only going to do the
     % approximate method
 
-    % Temporarily turn off all warnings
-    % Getting warning - Warning: Changing input set precision to single 
-    warning('off','all');
-
     % Verification
     results(i,1) = net.verify_robustness(IS, reachOptions, target);
     results(i,2) = toc(t);
-    
-    % Restore warning state
-    warning('on','all');
-
 
 end
 

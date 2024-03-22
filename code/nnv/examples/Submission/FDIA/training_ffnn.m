@@ -48,6 +48,7 @@ YTest = categorical(YTest);
 XTrain = table2array(XTrain);
 XTest = table2array(XTest);
 
+
 %% Training FFNN
 
 inputSize = size(XTrain, 2);
@@ -56,25 +57,33 @@ numClasses = numel(categories(YTrain));
 layers = [ 
     featureInputLayer(inputSize, 'Normalization', 'none', 'Name', 'input')
 
-    fullyConnectedLayer(100, 'Name', 'fc1') 
+    fullyConnectedLayer(200, 'Name', 'fc1') 
     reluLayer('Name', 'relu1')
-    
-    fullyConnectedLayer(50, 'Name', 'fc2') 
+
+    fullyConnectedLayer(200, 'Name', 'fc2') 
     reluLayer('Name', 'relu2')
     
-    fullyConnectedLayer(numClasses, 'Name', 'fc3')
+    fullyConnectedLayer(100, 'Name', 'fc3') 
+    reluLayer('Name', 'relu3')
+    
+    fullyConnectedLayer(numClasses, 'Name', 'fc4')
     softmaxLayer('Name', 'softmax')
     classificationLayer('Name', 'output')];
 
 
 options = trainingOptions('adam', ...
-    'MaxEpochs',100, ...
-    'MiniBatchSize', 128, ...
-    'Shuffle','every-epoch', ...
-    'ValidationData',{XTest,YTest}, ...
-    'ValidationFrequency',30, ...
-    'Verbose',true, ...
-    'Plots','training-progress');
+    'InitialLearnRate', 0.001, ...
+    'MaxEpochs', 100, ...
+    'LearnRateSchedule', 'piecewise', ...
+    'LearnRateDropFactor', 0.2, ...
+    'LearnRateDropPeriod', 5, ...
+    'MiniBatchSize', 64, ...
+    'Shuffle', 'every-epoch', ...
+    'ValidationData', {XTest, YTest}, ...
+    'ValidationFrequency', 30, ...
+    'Verbose', true, ...
+    'Plots', 'training-progress');
+
  
 net = trainNetwork(XTrain,YTrain,layers,options);
 
@@ -91,5 +100,8 @@ disp ("Validation accuracy = "+string(accuracy));
 % Save model
 disp("Saving model...");
 save('fdia_model_ffnn.mat', 'net', 'accuracy');
+
+% Save test data for verification 
+save('test_data.mat', 'XTest', 'YTest');
 
 toc(t);

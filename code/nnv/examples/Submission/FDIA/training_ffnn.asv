@@ -1,4 +1,4 @@
-%% Training of CNN for FDIA Classification
+%% Training of FFNN for FDIA Classification
 
 t = tic; % track total time for training
 
@@ -48,7 +48,8 @@ YTest = categorical(YTest);
 XTrain = table2array(XTrain);
 XTest = table2array(XTest);
 
-%% Training CNN
+
+%% Training FFNN
 
 inputSize = size(XTrain, 2);
 numClasses = numel(categories(YTrain)); 
@@ -56,25 +57,33 @@ numClasses = numel(categories(YTrain));
 layers = [ 
     featureInputLayer(inputSize, 'Normalization', 'none', 'Name', 'input')
 
-    fullyConnectedLayer(100, 'Name', 'fc1') % Example: 100 neurons
+    fullyConnectedLayer(200, 'Name', 'fc1') 
     reluLayer('Name', 'relu1')
-    
-    fullyConnectedLayer(50, 'Name', 'fc2') % Example: 50 neurons
+
+    fullyConnectedLayer(200, 'Name', 'fc2') 
     reluLayer('Name', 'relu2')
     
-    fullyConnectedLayer(numClasses, 'Name', 'fc3') % Match number of classes
+    fullyConnectedLayer(100, 'Name', 'fc3') 
+    reluLayer('Name', 'relu3')
+    
+    fullyConnectedLayer(numClasses, 'Name', 'fc4')
     softmaxLayer('Name', 'softmax')
     classificationLayer('Name', 'output')];
 
 
-options = trainingOptions('sgdm', ...
-    'InitialLearnRate',0.01, ...
-    'MaxEpochs',4, ...
-    'Shuffle','every-epoch', ...
-    'ValidationData',{XTest,YTest}, ...
-    'ValidationFrequency',30, ...
-    'Verbose',false, ...
-    'Plots','training-progress');
+options = trainingOptions('adam', ...
+    'InitialLearnRate', 0.001, ...
+    'MaxEpochs', 100, ...
+    'LearnRateSchedule', 'piecewise', ...
+    'LearnRateDropFactor', 0.2, ...
+    'LearnRateDropPeriod', 5, ...
+    'MiniBatchSize', 64, ...
+    'Shuffle', 'every-epoch', ...
+    'ValidationData', {XTest, YTest}, ...
+    'ValidationFrequency', 30, ...
+    'Verbose', true, ...
+    'Plots', 'training-progress');
+
  
 net = trainNetwork(XTrain,YTrain,layers,options);
 
@@ -90,6 +99,11 @@ disp ("Validation accuracy = "+string(accuracy));
 
 % Save model
 disp("Saving model...");
-save('fdia_model_cnn.mat', 'net', 'accuracy');
+save('fdia_model_ffnn.mat', 'net', 'accuracy');
+
+% Save test data for verification 
+% Assuming XTest and YTest are your variables
+save('test_data.mat', 'XTest', 'YTest');
+
 
 toc(t);
