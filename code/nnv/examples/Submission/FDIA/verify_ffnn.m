@@ -37,9 +37,9 @@ results = zeros(total_obs,2);
 
 % Define reachability method
 reachOptions = struct;
-reachOptions.reachMethod = 'approx-star';
+reachOptions.reachMethod = 'exact-star';
 
-% Iterate trhough all images
+% Iterate trhough all observations
 for i=1:total_obs
     observation = XTest(i, :);
     % Extract the corresponding label for the current observation

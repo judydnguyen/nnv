@@ -74,13 +74,13 @@ numClasses = numel(categories(YTrain));
 layers = [ 
     featureInputLayer(inputSize, 'Normalization', 'none', 'Name', 'input')
 
-    fullyConnectedLayer(200, 'Name', 'fc1') 
+    fullyConnectedLayer(50, 'Name', 'fc1') 
     reluLayer('Name', 'relu1')
 
-    fullyConnectedLayer(200, 'Name', 'fc2') 
+    fullyConnectedLayer(100, 'Name', 'fc2') 
     reluLayer('Name', 'relu2')
     
-    fullyConnectedLayer(100, 'Name', 'fc3') 
+    fullyConnectedLayer(50, 'Name', 'fc3') 
     reluLayer('Name', 'relu3')
     
     fullyConnectedLayer(numClasses, 'Name', 'fc4')
