@@ -2,11 +2,18 @@
 
 %% Load data into NNV 
 
-% Load network 
-fdia_model = load('fdia_model_ffnn.mat');
+% Load network (mat)
+% fdia_model = load('fdia_model_ffnn.mat');
 
 % Create NNV model
-net = matlab2nnv(fdia_model.net);
+% net = matlab2nnv(fdia_model.net);
+
+% Load options and input file
+loadOptions.InputDataFormat = "BC";
+onnxFile = "fdia_model_ffnn_pytorch.onnx";
+
+% Load network (onnx)
+net = onnx2nnv(onnxFile, loadOptions);
 
 % Load data 
 load('test_data.mat', 'XTest', 'YTest');
@@ -37,7 +44,7 @@ results = zeros(total_obs,2);
 
 % Define reachability method
 reachOptions = struct;
-reachOptions.reachMethod = 'approx-star';
+reachOptions.reachMethod = 'exact-star';
 
 % Iterate trhough all observations
 for i=1:total_obs

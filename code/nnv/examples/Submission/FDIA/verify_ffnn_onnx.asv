@@ -2,11 +2,21 @@
 
 %% Load data into NNV 
 
-% Load network (mat)
-fdia_model = load('fdia_model_ffnn.mat');
+% Correctly specify the input data format
+onnxFile = 'fdia_model_ffnn.onnx';
+% nn = importONNXNetwork(onnxFile, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'})
+% analyzeNetwork(nn)
+loadOptions.InputDataFormat = "BC";
 
-% Create NNV model
-net = matlab2nnv(fdia_model.net);
+netONNX = importONNXNetwork(onnxFile, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'})
+
+disp(netONNX.Layers(end));  % Display the properties of the last layer to check output size.
+
+% Convert the DAGNetwork to NNV format
+net = matlab2nnv(netONNX);
+
+net.OutputSize = 2;
+
 
 % Load data 
 load('test_data.mat', 'XTest', 'YTest');

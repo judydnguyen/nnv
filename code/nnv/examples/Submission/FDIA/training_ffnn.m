@@ -104,6 +104,10 @@ options = trainingOptions('adam', ...
  
 net = trainNetwork(XTrain,YTrain,layers,options);
 
+% Save model as ONNX
+disp("Saving model to ONNX format...");
+exportONNXNetwork(net, 'fdia_model_ffnn.onnx');
+
 % Save model
 disp("Saving model...");
 save('fdia_model_ffnn.mat', 'net', 'accuracy');

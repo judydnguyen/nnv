@@ -2,11 +2,17 @@
 
 %% Load data into NNV 
 
-% Load network (mat)
-fdia_model = load('fdia_model_ffnn.mat');
+% Specify the ONNX file to load 
+onnxFile = 'fdia_model_ffnn_pytorch.onnx';
 
-% Create NNV model
-net = matlab2nnv(fdia_model.net);
+% Load the ONNX file as DAGNetwork
+netONNX = importONNXNetwork(onnxFile, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'});
+
+% Convert the DAGNetwork to NNV format
+net = matlab2nnv(netONNX);
+
+% Jimmy Rigged Fix: manually edit ouput size
+net.OutputSize = 2;
 
 % Load data 
 load('test_data.mat', 'XTest', 'YTest');
