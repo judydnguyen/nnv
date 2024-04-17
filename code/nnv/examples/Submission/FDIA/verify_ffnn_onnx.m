@@ -3,10 +3,16 @@
 %% Load data into NNV 
 
 % Specify the ONNX file to load 
-onnxFile = 'fdia_model_ffnn_pytorch.onnx';
+% 50_100_50 model -> onnx model 1
+onnx_model_1 = fullfile('onnx_models','fdia_model_ffnn_pytorch_50_100_50.onnx');
+% 100_200_100 model -> onnx model 2
+onnx_model_2 = fullfile('onnx_models','fdia_model_ffnn_pytorch_100_200_100.onnx');
+% 200_400_200 model -> onnx model 3
+onnx_model_3 = fullfile('onnx_models','fdia_model_ffnn_pytorch_200_400_200.onnx');
 
 % Load the ONNX file as DAGNetwork
-netONNX = importONNXNetwork(onnxFile, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'});
+% ADJUST which onnx file here
+netONNX = importONNXNetwork(onnx_model_3, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'});
 
 % Convert the DAGNetwork to NNV format
 net = matlab2nnv(netONNX);
@@ -35,7 +41,8 @@ X_test_loaded(:, variableFeatures) = (X_test_loaded(:, variableFeatures) - min_v
 total_obs = size(X_test_loaded, 1);
 % disp(['There are total ', num2str(total_obs), ' observations']);
 
-epsilon = 0.01; % Change as needed
+% ADJUST epsilon value here
+epsilon = 0.01;
 
 %% Main Computation
 % to save results (robustness and time)
