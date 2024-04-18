@@ -37,11 +37,11 @@ results = zeros(total_obs,2);
 
 % Define reachability method
 reachOptions = struct;
-reachOptions.reachMethod = 'exact-star';
+reachOptions.reachMethod = 'approx-star';
 
 % Iterate trhough all observations
 for i=1:total_obs
-    observation = XTest(i, :);
+    observation = X_test_loaded(i, :);
     % Extract the corresponding label for the current observation
     target = YTest(i);
     target = single(target);

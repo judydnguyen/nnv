@@ -5,15 +5,15 @@
 
 % Specify the ONNX file to load 
 % 50_100_50 model -> onnx model 1
-onnx_model_1 = fullfile('onnx_models','fdia_model_ffnn_pytorch_50_100_50.onnx');
+onnx_model_1 = fullfile('updated_fdia_model_ffnn_pytorch_/updated_fdia_model_ffnn_pytorch_50_100_50.onnx');
 % 100_200_100 model -> onnx model 2
-onnx_model_2 = fullfile('onnx_models','fdia_model_ffnn_pytorch_100_200_100.onnx');
+onnx_model_2 = fullfile('updated_fdia_model_ffnn_pytorch_/updated_fdia_model_ffnn_pytorch_100_200_100.onnx');
 % 200_400_200 model -> onnx model 3
-onnx_model_3 = fullfile('onnx_models','fdia_model_ffnn_pytorch_200_400_200.onnx');
+onnx_model_3 = fullfile('updated_fdia_model_ffnn_pytorch_/updated_fdia_model_ffnn_pytorch_200_400_200.onnx');
 
 % Load the ONNX file as DAGNetwork
 % ADJUST which onnx file here
-netONNX = importONNXNetwork(onnx_model_3, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'});
+netONNX = importONNXNetwork(onnx_model_1, 'OutputLayerType', 'classification', 'InputDataFormats', {'BC'});
 
 % Convert the DAGNetwork to NNV format
 net = matlab2nnv(netONNX);
@@ -22,9 +22,9 @@ net = matlab2nnv(netONNX);
 net.OutputSize = 2;
 
 % Load data 
-load('test_data.mat', 'XTest', 'YTest');
-X_test_loaded = XTest;
-y_test_loaded = YTest;
+load('test_data_01_original.mat', 'X', 'y');
+X_test_loaded = X;
+y_test_loaded = y;
 
 % Normalize features in X_test_loaded
 min_values = min(X_test_loaded, [], 1);
@@ -43,7 +43,7 @@ total_obs = size(X_test_loaded, 1);
 % disp(['There are total ', num2str(total_obs), ' observations']);
 
 % ADJUST epsilon value here
-epsilon = 0.01;
+epsilon = [0.00001,0.005,0.01,0.025];
 
 %% Main Computation
 % to save results (robustness and time)
@@ -51,20 +51,20 @@ results = zeros(total_obs,2);
 
 % Define reachability method
 reachOptions = struct;
-reachOptions.reachMethod = 'exact-star';
-
+reachOptions.reachMethod = 'approx-star';
+for e=1:length(epsilon)
 % Iterate trhough all observations
 for i=1:total_obs
-    observation = XTest(i, :);
+    observation = X_test_loaded(i, :);
     % Extract the corresponding label for the current observation
-    target = YTest(i);
+    target = y(i);
     target = single(target);
     
     % Adversarial attack
-    if epsilon ~= 0
+    if epsilon(e) ~= 0
           % Apply epsilon perturbation to variable features
         perturbation = zeros(size(observation));
-        perturbation(variableFeatures) = epsilon * (2*rand(1, sum(variableFeatures)) - 1); % Perturbation in [-epsilon, epsilon]
+        perturbation(variableFeatures) = epsilon(e) * (2*rand(1, sum(variableFeatures)) - 1); % Perturbation in [-epsilon, epsilon]
         perturbedObservation = observation + perturbation;
     end
 
@@ -138,6 +138,7 @@ avgTime = totalTime/N;
 
 % Print results to screen
 disp("======= ROBUSTNESS RESULTS ==========")
+disp("Epsilon value: "+string(epsilon(e)))
 disp(" ");
 disp("Number of robust samples = "+string(rob)+ ", equivalent to " + string(100*rob/N) + "% of the samples.");
 disp("Number of not robust samples = " +string(not_rob)+ ", equivalent to " + string(100*not_rob/N) + "% of the samples.")
@@ -147,3 +148,4 @@ disp("It took a total of "+string(totalTime) + " seconds to compute the verifica
 
 % Save results
 save('results_verify_fdia_ffnn.mat', 'results');
+end
