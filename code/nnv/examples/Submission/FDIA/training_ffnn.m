@@ -110,7 +110,7 @@ exportONNXNetwork(net, 'fdia_model_ffnn.onnx');
 
 % Save model
 disp("Saving model...");
-save('fdia_model_ffnn.mat', 'net', 'accuracy');
+save('fdia_model_ffnn.mat');
 
 % Save test data for verification 
 save('test_data.mat', 'XTest', 'YTest');
