@@ -1,4 +1,10 @@
 %% Robustness verification of FFNN against FDIAs
+%
+% Necessary updates
+% - adjust everything for multiple epsilons.
+% - adjust results to how you want them recorded
+% - adjust everything for multiple models
+%
 
 % Suppress warnings
 warning('off', 'nnet_cnn_onnx:onnx:WarnAPIDeprecation');
